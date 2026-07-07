@@ -5,11 +5,12 @@ services:
   # 1. FastAPI Machine Learning Forecasting Microservice
   - type: web
     name: ayushman-ai-ml
-    env: docker
-    dockerfilePath: ml_service/Dockerfile
-    dockerContext: ml_service
+    env: python
+    rootDir: ml_service
     plan: free
     region: oregon
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHONUNBUFFERED
         value: "1"
@@ -17,10 +18,11 @@ services:
   # 2. React/Express Full-Stack Web App (Dashboard & APIs)
   - type: web
     name: ayushman-ai-web
-    env: docker
-    dockerfilePath: Dockerfile
+    env: node
     plan: free
     region: oregon
+    buildCommand: npm install && npm run build
+    startCommand: node dist/server.cjs
     envVars:
       - key: NODE_ENV
         value: production
