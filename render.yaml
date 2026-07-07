@@ -1,0 +1,34 @@
+# Render Blueprint Specification for AYUSHMAN-AI (आयुष्मान-AI)
+# Deploy both services in one click!
+
+services:
+  # 1. FastAPI Machine Learning Forecasting Microservice
+  - type: web
+    name: ayushman-ai-ml
+    env: docker
+    dockerfilePath: ml_service/Dockerfile
+    plan: free
+    region: oregon
+    envVars:
+      - key: PYTHONUNBUFFERED
+        value: "1"
+
+  # 2. React/Express Full-Stack Web App (Dashboard & APIs)
+  - type: web
+    name: ayushman-ai-web
+    env: docker
+    dockerfilePath: Dockerfile
+    plan: free
+    region: oregon
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "3000"
+      - key: GEMINI_API_KEY
+        sync: false # You will be prompted to paste your Gemini API key securely in the Render dashboard.
+      - key: ML_SERVICE_URL
+        fromService:
+          type: web
+          name: ayushman-ai-ml
+          property: host

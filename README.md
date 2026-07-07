@@ -1,7 +1,7 @@
 # 🏥 AYUSHMAN-AI (आयुष्मान-AI)
 ### Cross-Platform Offline-First Clinical Log & Generative Redistribution Network
 
-> 
+> **Google AI Studio Build Hackathon MVP Submission**  
 > *Empowering remote Primary Health Centers (PHCs) with offline-first synchronization, ambient AI voice logging, and generative regional asset-matching pipelines.*
 
 ---
