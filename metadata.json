@@ -1,0 +1,6 @@
+{
+  "name": "AYUSHMAN-AI",
+  "description": "AI-Powered District Health Command Center for real-time healthcare facility monitoring, operational risk prediction, and resource optimization.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

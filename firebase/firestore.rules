@@ -1,0 +1,87 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isRole(role) {
+      return isAuthenticated() && getUserData().role == role;
+    }
+
+    function isAdmin() {
+      return isRole('ADMIN');
+    }
+
+    function isWorker() {
+      return isRole('WORKER');
+    }
+
+    // Collection: Users
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin() || (isAuthenticated() && request.auth.uid == userId);
+    }
+
+    // Collection: Facilities (Primary Health Centers / Community Health Centers)
+    match /facilities/{facilityId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Collection: Inventory (Medicines and Stock on Hand)
+    match /inventory/{itemId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin() || isWorker();
+    }
+
+    // Collection: Attendance (Doctor, nurse, and staff presence)
+    match /attendance/{attendanceId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin() || isWorker();
+    }
+
+    // Collection: Patients (Daily inpatient and outpatient counts)
+    match /patients/{patientId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin() || isWorker();
+    }
+
+    // Collection: Alerts (Triggered anomalies, shortages, or surges)
+    match /alerts/{alertId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin() || isWorker();
+    }
+
+    // Collection: Recommendations (AI-generated asset redistribution tasks)
+    match /recommendations/{recommendationId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Collection: Audit Logs (Immutable security logs tracking administrative changes)
+    match /audit_logs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated();
+      allow update, delete: if false; // Audit logs must be immutable
+    }
+
+    // Collection: Predictions (ML time-series forecasts stored for dashboard visualization)
+    match /predictions/{predictionId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Collection: Notifications (FCM device targets or persistent notification trays)
+    match /notifications/{notificationId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin() || isWorker();
+    }
+  }
+}

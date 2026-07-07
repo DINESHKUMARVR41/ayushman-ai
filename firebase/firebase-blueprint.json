@@ -1,0 +1,132 @@
+{
+  "version": "1.0.0",
+  "name": "AYUSHMAN-AI Database Blueprint",
+  "collections": {
+    "users": {
+      "description": "System users with Role-Based Access Control configurations",
+      "fields": {
+        "uid": { "type": "string", "description": "Google UID or Custom Authenticated ID", "required": true },
+        "name": { "type": "string", "description": "Full display name of the user", "required": true },
+        "email": { "type": "string", "description": "Unique verified email address", "required": true },
+        "role": { "type": "string", "enum": ["ADMIN", "WORKER"], "description": "Administrative authority level", "required": true },
+        "facilityId": { "type": "string", "description": "Assigned PHC / CHC facility ID", "required": false },
+        "createdAt": { "type": "timestamp", "description": "Record creation timestamp", "required": true }
+      }
+    },
+    "facilities": {
+      "description": "Healthcare facilities registered on the regional map database",
+      "fields": {
+        "id": { "type": "string", "description": "Unique facility code", "required": true },
+        "name": { "type": "string", "description": "E.g., PHC Rampur, CHC Bilaspur", "required": true },
+        "type": { "type": "string", "enum": ["PHC", "CHC"], "required": true },
+        "district": { "type": "string", "description": "District administrative boundary name", "required": true },
+        "location": { "type": "geopoint", "description": "Geo-coordinate coordinates (Latitude, Longitude)", "required": true },
+        "contactNumber": { "type": "string", "required": true },
+        "totalBeds": { "type": "number", "required": true },
+        "allocatedDoctors": { "type": "number", "required": true }
+      }
+    },
+    "inventory": {
+      "description": "Medicine stocks and operational critical supplies",
+      "fields": {
+        "id": { "type": "string", "required": true },
+        "facilityId": { "type": "string", "description": "Foreign key referencing facilities.id", "required": true },
+        "itemName": { "type": "string", "description": "E.g., Paracetamol, Amoxicillin, COVID Kits", "required": true },
+        "category": { "type": "string", "enum": ["Essential Medicine", "Vaccine", "Surgical Kit"], "required": true },
+        "quantity": { "type": "number", "required": true },
+        "minRequired": { "type": "number", "description": "Safety threshold buffer", "required": true },
+        "unit": { "type": "string", "description": "E.g., Tablets, Vials, Units", "required": true },
+        "lastUpdated": { "type": "timestamp", "required": true }
+      }
+    },
+    "attendance": {
+      "description": "Daily attendance logging for medical and nursing personnel",
+      "fields": {
+        "id": { "type": "string", "required": true },
+        "facilityId": { "type": "string", "required": true },
+        "date": { "type": "string", "description": "YYYY-MM-DD date format", "required": true },
+        "role": { "type": "string", "enum": ["Doctor", "Nurse", "Support Staff"], "required": true },
+        "presentCount": { "type": "number", "required": true },
+        "onLeaveCount": { "type": "number", "required": true },
+        "lastUpdated": { "type": "timestamp", "required": true }
+      }
+    },
+    "patients": {
+      "description": "Aggregated daily clinical patient log",
+      "fields": {
+        "id": { "type": "string", "required": true },
+        "facilityId": { "type": "string", "required": true },
+        "date": { "type": "string", "description": "YYYY-MM-DD", "required": true },
+        "outpatientCount": { "type": "number", "required": true },
+        "inpatientCount": { "type": "number", "required": true },
+        "criticalCases": { "type": "number", "required": true },
+        "referralsOut": { "type": "number", "required": true },
+        "lastUpdated": { "type": "timestamp", "required": true }
+      }
+    },
+    "alerts": {
+      "description": "Real-time alerts generated regarding inventory shortages or staff crises",
+      "fields": {
+        "id": { "type": "string", "required": true },
+        "facilityId": { "type": "string", "required": true },
+        "type": { "type": "string", "enum": ["STOCK_OUT", "SURGE_ALERT", "STAFF_DEFICIT"], "required": true },
+        "severity": { "type": "string", "enum": ["CRITICAL", "WARNING"], "required": true },
+        "message": { "type": "string", "required": true },
+        "status": { "type": "string", "enum": ["ACTIVE", "RESOLVED"], "required": true },
+        "createdAt": { "type": "timestamp", "required": true },
+        "resolvedAt": { "type": "timestamp", "required": false }
+      }
+    },
+    "recommendations": {
+      "description": "Gemini AI-suggested asset and personnel redistributions",
+      "fields": {
+        "id": { "type": "string", "required": true },
+        "sourceFacilityId": { "type": "string", "required": true },
+        "targetFacilityId": { "type": "string", "required": true },
+        "itemType": { "type": "string", "enum": ["MEDICINE", "STAFF", "BEDS"], "required": true },
+        "itemName": { "type": "string", "required": true },
+        "amount": { "type": "number", "required": true },
+        "reasoning": { "type": "string", "required": true },
+        "status": { "type": "string", "enum": ["PENDING", "APPROVED", "REJECTED"], "required": true },
+        "impactScore": { "type": "number", "description": "Predicted positive impact percentage (0-100)", "required": true },
+        "createdAt": { "type": "timestamp", "required": true }
+      }
+    },
+    "audit_logs": {
+      "description": "Immutable ledger tracking structural state changes",
+      "fields": {
+        "id": { "type": "string", "required": true },
+        "operatorEmail": { "type": "string", "required": true },
+        "operatorRole": { "type": "string", "required": true },
+        "action": { "type": "string", "description": "E.g., APPROVED_REDISTRIBUTION, UPDATE_STOCK", "required": true },
+        "targetId": { "type": "string", "required": true },
+        "payloadBefore": { "type": "map", "required": true },
+        "payloadAfter": { "type": "map", "required": true },
+        "timestamp": { "type": "timestamp", "required": true }
+      }
+    },
+    "predictions": {
+      "description": "ML-predicted time series for drug stocks",
+      "fields": {
+        "id": { "type": "string", "required": true },
+        "facilityId": { "type": "string", "required": true },
+        "itemId": { "type": "string", "required": true },
+        "forecastDate": { "type": "string", "description": "YYYY-MM-DD", "required": true },
+        "predictedQty": { "type": "number", "required": true },
+        "confidenceInterval": { "type": "array", "description": "[LowerBound, UpperBound]", "required": true },
+        "generatedAt": { "type": "timestamp", "required": true }
+      }
+    },
+    "notifications": {
+      "description": "Target FCM registration tokens or broadcast messages",
+      "fields": {
+        "id": { "type": "string", "required": true },
+        "targetUserId": { "type": "string", "description": "Recipient user ID, or 'BROADCAST' for all", "required": true },
+        "title": { "type": "string", "required": true },
+        "body": { "type": "string", "required": true },
+        "sent": { "type": "boolean", "required": true },
+        "createdAt": { "type": "timestamp", "required": true }
+      }
+    }
+  }
+}
