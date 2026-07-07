@@ -6,7 +6,7 @@ services:
   - type: web
     name: ayushman-ai-ml
     env: docker
-    dockerfilePath: ml_service/Dockerfile
+    dockerfilePath: Dockerfile
     dockerContext: ml_service
     plan: free
     region: oregon
